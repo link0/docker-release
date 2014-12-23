@@ -9,7 +9,7 @@ Usage
 Setup once:
 ```bash
 
-alias docker-release="docker run -v $(pwd):/build -v $HOME/.gitconfig:/root/.gitconfig -v /var/run/docker.sock:/docker.sock --rm -ti link0/docker-release $1 $2";
+alias docker-release="docker run -v $(pwd):/build -v $HOME/.gitconfig:/root/.gitconfig -v /var/run/docker.sock:/var/run/docker.sock --rm -ti link0/docker-release $1 $2";
 
 ```
 
