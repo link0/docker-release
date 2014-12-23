@@ -12,4 +12,4 @@ RUN apt-get -y install docker.io git
 ADD app /app
 
 # Execute docker-release
-CMD [ "/app/docker-release" ]
+ENTRYPOINT [ "/app/docker-release" ]
