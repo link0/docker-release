@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+# Author: Dennis de Greef <github@link0.net>
+# MIT License
+#
+
+###
+# TODO:
+#   - Check if docker tag already in registry
+#   - Verify IMAGE_TAG for semantic versioning with regex
+#   - Implement git tag GPG signatures
+###
+
+DOCKER=$(which docker);
+GIT=$(which git);
+
+cd /build;
+
+if [ ! -d ".git" ];
+then
+	echo "Location does not appear to be a git repository, aborting...";
+	exit 1;
+fi;
+
+if [[ $(git status --porcelain | wc -l) -gt 0 ]];
+then
+	git status --porcelain;
+	echo "Not all work is committed, aborting...";
+	exit 1;
+fi;
+
+IMAGE_NAME=$1
+IMAGE_TAG=$2
+
+# NOTE: Unable to check if the tag is already available upstream, skip for now
+#       Awaiting https://github.com/docker/docker/issues/9015 (Proposal: JSON Registry API V2.1)
+# if [ $($DOCKER search $IMAGE_NAME:$IMAGE_TAG | wc -l) -gt 0 ];
+# then
+#     echo "Tag already available in docker, aborting...";
+#     exit 1;
+# fi;
+
+if [ $($GIT tag -l $IMAGE_TAG | wc -l) -gt 0 ];
+then
+	echo "Tag already available in git, aborting...";
+	exit 1;
+fi;
+
+# Tagging version in git
+$GIT tag -a $IMAGE_TAG -m "Version ${IMAGE_TAG}";
+
+# Building target
+IMAGE_HASH=$($DOCKER build -t $IMAGE_NAME .);
+IMAGE_HASH=$(echo "${IMAGE_HASH}" | grep 'Successfully built' | awk '{print $3}');
+if [ "x$?" != "x0" ];
+then
+	echo "Docker build failed! Aborting...";
+
+	# Removing git tag
+	$GIT tag -d $IMAGE_TAG;
+
+	exit 1;
+fi;
+
+# Tagging docker image
+$DOCKER tag $IMAGE_HASH $IMAGE_NAME:$IMAGE_TAG;
