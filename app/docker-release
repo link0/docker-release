@@ -64,3 +64,5 @@ fi;
 
 # Tagging docker image
 $DOCKER tag $IMAGE_HASH $IMAGE_NAME:$IMAGE_TAG;
+
+$DOCKER images | grep "${IMAGE_NAME}"
